@@ -189,16 +189,21 @@ export const STOCKS: Stock[] = [
 ];
 
 // Seed random price movements to simulate active markets
-export function getSimulatedStocks(): Stock[] {
-  return STOCKS.map(stock => {
-    // Generate a small random variation (-0.4% to +0.4%)
-    const pct = (Math.random() * 0.8 - 0.4) / 100;
+export function getSimulatedStocks(currentStocks?: Stock[]): Stock[] {
+  const baseStocks = currentStocks && currentStocks.length > 0 ? currentStocks : STOCKS;
+  return baseStocks.map(stock => {
+    // Generate a small random variation (-0.1% to +0.1%)
+    const pct = (Math.random() * 0.2 - 0.1) / 100;
     const priceDiff = stock.currentPrice * pct;
     const newPrice = Math.round((stock.currentPrice + priceDiff) * 100) / 100;
     const finalPrice = stock.market === "KR" ? Math.round(newPrice / 50) * 50 : newPrice; // Round KRW to nearest 50
 
-    const initialChange = stock.change + (finalPrice - stock.currentPrice);
-    const initialChangePercent = Math.round((initialChange / (stock.currentPrice - stock.change)) * 10000) / 100;
+    // Get the original stock to find the baseline yesterday close
+    const original = STOCKS.find(s => s.symbol === stock.symbol) || stock;
+    const yesterdayClose = original.currentPrice - original.change;
+
+    const initialChange = finalPrice - yesterdayClose;
+    const initialChangePercent = Math.round((initialChange / yesterdayClose) * 10000) / 100;
 
     return {
       ...stock,

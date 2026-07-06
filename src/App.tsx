@@ -14,8 +14,10 @@ import AnalysisReport from "./components/AnalysisReport";
 
 import { 
   TrendingUp, TrendingDown, Star, Globe, ShieldAlert, Sparkles, 
-  HelpCircle, BarChart3, Clock, ArrowUpRight, ArrowDownRight, Award 
+  HelpCircle, BarChart3, Clock, ArrowUpRight, ArrowDownRight, Award,
+  LayoutDashboard, Newspaper, Briefcase
 } from "lucide-react";
+import AnalysisHistory from "./components/AnalysisHistory";
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -23,6 +25,14 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [marketStocks, setMarketStocks] = useState<Stock[]>(STOCKS);
+  const [analysisRefreshTrigger, setAnalysisRefreshTrigger] = useState(0);
+
+  const tabs = [
+    { id: "dashboard", label: "대시보드", icon: LayoutDashboard },
+    { id: "analysis", label: "AI 종목분석", icon: Sparkles },
+    { id: "news", label: "뉴스 브리핑", icon: Newspaper },
+    { id: "portfolio", label: "내 포트폴리오", icon: Briefcase }
+  ];
 
   // Market Indices states
   const [kospi, setKospi] = useState({ price: 2684.50, change: 18.25, pct: 0.68 });
@@ -40,7 +50,7 @@ export default function App() {
   useEffect(() => {
     const interval = setInterval(() => {
       setMarketStocks(prev => {
-        const updated = getSimulatedStocks();
+        const updated = getSimulatedStocks(prev);
         // Keep activeStock reference fresh
         const currentActive = updated.find(s => s.symbol === activeStock.symbol);
         if (currentActive) {
@@ -92,7 +102,7 @@ export default function App() {
         setActiveTab={setActiveTab}
       />
 
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 pb-24 md:pb-8">
         
         {/* Tab content router */}
         {activeTab === "dashboard" && (
@@ -103,7 +113,7 @@ export default function App() {
               {/* Left & Mid: Auto-complete Stock Search & Quick Tags */}
               <div className="lg:col-span-2 space-y-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                  <StockSearch onSelectStock={handleSelectStock} activeStock={activeStock} />
+                  <StockSearch onSelectStock={handleSelectStock} activeStock={activeStock} marketStocks={marketStocks} />
                   
                   {/* Market tags */}
                   <div className="flex gap-2">
@@ -119,7 +129,7 @@ export default function App() {
                 {/* Popular Stock Badges */}
                 <div className="flex flex-wrap items-center gap-2 text-xs">
                   <span className="text-slate-500 font-bold mr-1 select-none">인기 종목:</span>
-                  {STOCKS.slice(0, 6).map(s => {
+                  {marketStocks.slice(0, 6).map(s => {
                     const isSelected = activeStock.symbol === s.symbol;
                     const stockPos = s.change >= 0;
                     return (
@@ -264,6 +274,7 @@ export default function App() {
                   currentUser={currentUser} 
                   onSelectStock={handleSelectStock} 
                   activeStockSymbol={activeStock.symbol} 
+                  marketStocks={marketStocks}
                 />
 
                 {/* Platform Values Info Panel */}
@@ -293,7 +304,7 @@ export default function App() {
               <div className="rounded-2xl border border-slate-850 bg-slate-900/20 p-5">
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">분석 대상 종목 선택</h3>
                 <div className="space-y-1">
-                  {STOCKS.map(s => {
+                  {marketStocks.map(s => {
                     const isSelected = activeStock.symbol === s.symbol;
                     return (
                       <button
@@ -314,11 +325,21 @@ export default function App() {
                 </div>
               </div>
 
+              {/* Analysis History */}
+              <AnalysisHistory
+                currentUser={currentUser}
+                onSelectStock={handleSelectStock}
+                activeStockSymbol={activeStock.symbol}
+                refreshTrigger={analysisRefreshTrigger}
+                marketStocks={marketStocks}
+              />
+
               {/* Watchlist Quick Access */}
               <Watchlist 
                 currentUser={currentUser} 
                 onSelectStock={handleSelectStock} 
                 activeStockSymbol={activeStock.symbol} 
+                marketStocks={marketStocks}
               />
             </div>
 
@@ -336,7 +357,11 @@ export default function App() {
                 </div>
               </div>
 
-              <AnalysisReport stock={activeStock} currentUser={currentUser} />
+              <AnalysisReport 
+                stock={activeStock} 
+                currentUser={currentUser} 
+                onAnalysisSaved={() => setAnalysisRefreshTrigger(prev => prev + 1)}
+              />
             </div>
           </div>
         )}
@@ -385,7 +410,7 @@ export default function App() {
               </div>
             </div>
 
-            <PortfolioManager currentUser={currentUser} activeStock={activeStock} />
+            <PortfolioManager currentUser={currentUser} activeStock={activeStock} marketStocks={marketStocks} />
           </div>
         )}
 
@@ -398,6 +423,32 @@ export default function App() {
           <p>이 서비스는 모의 시뮬레이션 데이터와 인공지능 요약에 기반하여 구성되었습니다. 본 분석 보고서는 투자 의사 결정의 참고 용도일 뿐 최종 투자 손실 책임은 전적으로 본인에게 귀속됩니다.</p>
         </div>
       </footer>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 border-t border-slate-900 backdrop-blur-md pb-safe">
+        <div className="grid grid-cols-4 h-16">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+            const IconComponent = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className={`flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
+                  isActive ? "text-emerald-400" : "text-slate-500 hover:text-slate-300"
+                }`}
+                id={`mobile-tab-${tab.id}`}
+              >
+                <IconComponent className="h-5 w-5" />
+                <span className="text-[10px] font-bold">{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* 2. Authentication Modal Popup */}
       <LoginModal 

@@ -10,9 +10,10 @@ interface WatchlistProps {
   currentUser: User | null;
   onSelectStock: (stock: Stock) => void;
   activeStockSymbol: string;
+  marketStocks?: Stock[];
 }
 
-export default function Watchlist({ currentUser, onSelectStock, activeStockSymbol }: WatchlistProps) {
+export default function Watchlist({ currentUser, onSelectStock, activeStockSymbol, marketStocks = STOCKS }: WatchlistProps) {
   const [items, setItems] = useState<WatchlistItem[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -104,7 +105,7 @@ export default function Watchlist({ currentUser, onSelectStock, activeStockSymbo
   };
 
   const getFullStockInfo = (symbol: string): Stock | undefined => {
-    return STOCKS.find(s => s.symbol === symbol);
+    return marketStocks.find(s => s.symbol === symbol);
   };
 
   return (

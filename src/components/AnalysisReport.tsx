@@ -115,7 +115,7 @@ export default function AnalysisReport({ stock, currentUser, onAnalysisSaved }: 
       const data: AnalysisResult = await response.json();
       setResult(data);
 
-      // Automatically save report to user history in Firestore if logged in
+      // Automatically save report to user history in Firestore if logged in, or LocalStorage if guest
       if (currentUser) {
         try {
           await addDoc(collection(db, "analyses"), {
@@ -131,6 +131,27 @@ export default function AnalysisReport({ stock, currentUser, onAnalysisSaved }: 
           if (onAnalysisSaved) onAnalysisSaved();
         } catch (dbErr) {
           console.error("Error saving search report to Firestore:", dbErr);
+        }
+      } else {
+        try {
+          const stored = localStorage.getItem("sp_analysis_history");
+          const history = stored ? JSON.parse(stored) : [];
+          // Filter out existing item for this stock to move it to top
+          const filtered = history.filter((h: any) => h.symbol !== stock.symbol);
+          const newItem = {
+            symbol: stock.symbol,
+            name: stock.name,
+            market: stock.market,
+            score: data.score,
+            rating: data.rating,
+            overallOpinion: data.overallOpinion,
+            analyzedAt: new Date().toISOString()
+          };
+          const updated = [newItem, ...filtered].slice(0, 6);
+          localStorage.setItem("sp_analysis_history", JSON.stringify(updated));
+          if (onAnalysisSaved) onAnalysisSaved();
+        } catch (localErr) {
+          console.error("Error saving search report to LocalStorage:", localErr);
         }
       }
     } catch (err: any) {

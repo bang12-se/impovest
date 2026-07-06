@@ -6,9 +6,10 @@ import { Search, X, Star, TrendingUp, TrendingDown } from "lucide-react";
 interface StockSearchProps {
   onSelectStock: (stock: Stock) => void;
   activeStock: Stock;
+  marketStocks?: Stock[];
 }
 
-export default function StockSearch({ onSelectStock, activeStock }: StockSearchProps) {
+export default function StockSearch({ onSelectStock, activeStock, marketStocks = STOCKS }: StockSearchProps) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -16,7 +17,7 @@ export default function StockSearch({ onSelectStock, activeStock }: StockSearchP
   // Filter stocks based on name or symbol matching query
   const filteredStocks = query.trim() === "" 
     ? [] 
-    : STOCKS.filter(stock => 
+    : marketStocks.filter(stock => 
         stock.name.toLowerCase().includes(query.toLowerCase()) ||
         stock.symbol.toLowerCase().includes(query.toLowerCase())
       );

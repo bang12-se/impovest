@@ -12,9 +12,10 @@ import {
 interface PortfolioManagerProps {
   currentUser: User | null;
   activeStock: Stock;
+  marketStocks?: Stock[];
 }
 
-export default function PortfolioManager({ currentUser, activeStock }: PortfolioManagerProps) {
+export default function PortfolioManager({ currentUser, activeStock, marketStocks = STOCKS }: PortfolioManagerProps) {
   const [holdings, setHoldings] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -82,7 +83,7 @@ export default function PortfolioManager({ currentUser, activeStock }: Portfolio
   }, [currentUser]);
 
   const getFullStockInfo = (symbol: string): Stock | undefined => {
-    return STOCKS.find(s => s.symbol === symbol);
+    return marketStocks.find(s => s.symbol === symbol);
   };
 
   // Synchronize current prices for local holdings periodically or on load
