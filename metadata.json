@@ -1,0 +1,6 @@
+{
+  "name": "StockPilot AI",
+  "description": "AI-powered stock analysis platform with real-time simulated prices, interactive charts, portfolios, watchlists, news summaries, and personalized deep investment insights.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
