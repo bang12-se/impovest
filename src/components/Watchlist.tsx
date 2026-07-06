@@ -196,7 +196,7 @@ export default function Watchlist({ currentUser, onSelectStock, activeStockSymbo
       <div className="mt-5 pt-4 border-t border-slate-800/50">
         <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2.5">인기 급상승 종목</h4>
         <div className="grid grid-cols-2 gap-2">
-          {STOCKS.slice(0, 4).map(stock => {
+          {marketStocks.slice(0, 4).map(stock => {
             const isWatchlisted = items.some(item => item.symbol === stock.symbol);
             if (isWatchlisted) return null;
             return (

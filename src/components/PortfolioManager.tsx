@@ -389,7 +389,7 @@ export default function PortfolioManager({ currentUser, activeStock, marketStock
                 className="w-full rounded-xl border border-slate-850 bg-slate-950 p-3 text-sm text-slate-200 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all cursor-pointer"
                 id="select-portfolio-stock"
               >
-                {STOCKS.map(s => (
+                {marketStocks.map(s => (
                   <option key={s.symbol} value={s.symbol}>
                     {s.name} ({s.symbol}) - {s.market === "KR" ? "원" : "USD"}
                   </option>

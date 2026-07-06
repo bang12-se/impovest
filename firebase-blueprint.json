@@ -1,0 +1,54 @@
+{
+  "collections": {
+    "watchlists": {
+      "description": "User's favorited stocks for tracking and quick access.",
+      "fields": {
+        "uid": { "type": "string", "description": "The unique ID of the user." },
+        "symbol": { "type": "string", "description": "Ticker symbol of the stock." },
+        "name": { "type": "string", "description": "Display name of the stock." },
+        "market": { "type": "string", "description": "Stock market (e.g. KR, US)." },
+        "addedAt": { "type": "string", "description": "ISO timestamp of when it was added." }
+      },
+      "indexes": [
+        {
+          "fields": { "uid": "asc" }
+        }
+      ]
+    },
+    "portfolios": {
+      "description": "Stock transaction holding items recorded by the user.",
+      "fields": {
+        "uid": { "type": "string", "description": "The unique ID of the user." },
+        "symbol": { "type": "string", "description": "Ticker symbol of the stock." },
+        "name": { "type": "string", "description": "Display name of the stock." },
+        "market": { "type": "string", "description": "Stock market (e.g. KR, US)." },
+        "quantity": { "type": "number", "description": "Number of shares owned." },
+        "avgPrice": { "type": "number", "description": "Average buy price per share." },
+        "addedAt": { "type": "string", "description": "ISO timestamp of when the record was added." }
+      },
+      "indexes": [
+        {
+          "fields": { "uid": "asc", "symbol": "asc" }
+        }
+      ]
+    },
+    "analyses": {
+      "description": "History of AI-powered stock analysis results generated for the user.",
+      "fields": {
+        "uid": { "type": "string", "description": "The unique ID of the user." },
+        "symbol": { "type": "string", "description": "Ticker symbol of the stock." },
+        "name": { "type": "string", "description": "Display name of the stock." },
+        "market": { "type": "string", "description": "Stock market (e.g. KR, US)." },
+        "score": { "type": "number", "description": "AI investment score (0-100)." },
+        "rating": { "type": "number", "description": "Star rating (1-5)." },
+        "overallOpinion": { "type": "string", "description": "General outlook (positive, neutral, negative)." },
+        "analyzedAt": { "type": "string", "description": "ISO timestamp of when the analysis was generated." }
+      },
+      "indexes": [
+        {
+          "fields": { "uid": "asc" }
+        }
+      ]
+    }
+  }
+}

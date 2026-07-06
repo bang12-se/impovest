@@ -1,8 +1,67 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Strict Default Deny
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isLoggedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(uid) {
+      return isLoggedIn() && request.auth.uid == uid;
+    }
+
+    // Watchlists collection rules
+    match /watchlists/{watchlistId} {
+      allow read: if isLoggedIn() && isOwner(resource.data.uid);
+      allow create: if isLoggedIn() 
+        && isOwner(request.resource.data.uid)
+        && request.resource.data.symbol is string
+        && request.resource.data.name is string;
+      allow update: if isLoggedIn()
+        && isOwner(resource.data.uid)
+        && isOwner(request.resource.data.uid)
+        && request.resource.data.symbol == resource.data.symbol;
+      allow delete: if isLoggedIn() && isOwner(resource.data.uid);
+    }
+
+    // Portfolios collection rules
+    match /portfolios/{portfolioId} {
+      allow read: if isLoggedIn() && isOwner(resource.data.uid);
+      allow create: if isLoggedIn()
+        && isOwner(request.resource.data.uid)
+        && request.resource.data.symbol is string
+        && request.resource.data.name is string
+        && request.resource.data.quantity is number
+        && request.resource.data.quantity > 0
+        && request.resource.data.avgPrice is number
+        && request.resource.data.avgPrice > 0;
+      allow update: if isLoggedIn()
+        && isOwner(resource.data.uid)
+        && isOwner(request.resource.data.uid)
+        && request.resource.data.symbol == resource.data.symbol
+        && request.resource.data.quantity is number
+        && request.resource.data.quantity > 0
+        && request.resource.data.avgPrice is number
+        && request.resource.data.avgPrice > 0;
+      allow delete: if isLoggedIn() && isOwner(resource.data.uid);
+    }
+
+    // Analyses collection rules
+    match /analyses/{analysisId} {
+      allow read: if isLoggedIn() && isOwner(resource.data.uid);
+      allow create: if isLoggedIn()
+        && isOwner(request.resource.data.uid)
+        && request.resource.data.symbol is string
+        && request.resource.data.name is string
+        && request.resource.data.score is int
+        && request.resource.data.score >= 0
+        && request.resource.data.score <= 100;
+      allow update, delete: if isLoggedIn() && isOwner(resource.data.uid);
     }
   }
 }
