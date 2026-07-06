@@ -11,6 +11,27 @@ const PORT = 3000;
 
 app.use(express.json());
 
+// CORS Middleware to allow requests from Cloudflare Pages or other domains
+app.use((req, res, next) => {
+  const allowedOrigins = [
+    "https://impovest.pages.dev",
+    "https://impovest.bang051612.workers.dev"
+  ];
+  const origin = req.headers.origin;
+  if (origin && (allowedOrigins.includes(origin) || origin.endsWith(".pages.dev"))) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  } else {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+  }
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 // Lazy-loaded Gemini AI client
 let aiClient: GoogleGenAI | null = null;
 
